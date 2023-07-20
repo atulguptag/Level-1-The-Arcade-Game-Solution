@@ -1,0 +1,110 @@
+                                        '''Quiz: Getting Started with Go (Answers)'''
+
+1. You reviewed Go basics and are deploying your Go app to a Google Cloud serverless platform. What are the advantages of using a Google Cloud serverless platform?
+
+Correct - Zero server management, no up-front provisioning, auto-scaling, and paying only for the resources used.
+
+Since these are all Google Cloud serverless platforms, you use the same code to deploy the Go app to all of the platforms.
+
+After provisioning, the Go app can run on multiple platform types, for example Cloud Functions and App Engine, at the same time.
+
+After you configure access to one Google serverless platform, the Go app can access all.
+
+
+2. Which of the following Google Cloud serverless platforms support Go apps? (Choose the best answer.)
+
+Correct - All platforms mentioned
+
+Compute Engine, App Engine, and Cloud Run
+
+Google Kubernetes Engine
+
+Cloud Functions
+
+
+3. Time to test your app. When testing a Go app on different Google Cloud serverless platforms, you...
+
+Correct - Use the same Go app source code for each platform.
+
+Use the same Go functions to deploy to each platform.
+
+Update the Go app source code for each platform.
+
+Use the same source code, but different interpreters for each platform.
+
+
+4. Go is a compiled language. What's one advantage to being a compiled language?
+
+Correct - A compiled language does not require a runtime like Node, Python, or JDK to execute.
+
+Using a compiled language makes an application more secure when deployed to Google Cloud.
+
+A compiled language is more accurate than an interpreted language when run in App Engine and Cloud Run.
+
+There is less code to manage for a compiled language.
+
+
+5. You use an interface to specify object behavior. An interface is a set of methods. What does the interface type do?
+
+Correct - Implements Go interfaces.
+
+Configures access to the data.
+
+Specifies what platform the Go app runs on.
+
+Defines the packages in the “main” package.
+
+
+6. You want to deploy your Go app to Cloud Functions. The two types of Cloud Functions are...
+
+Correct - HTTP and Background functions
+
+Group functions
+
+NAT and NFV functions
+
+Create and drop functions
+
+
+7. To connect to Cloud services to retrieve data...
+
+You use different code to retrieve data from each data platform.
+
+Correct - You create a package that retrieves the data and then imports your “main” package.
+
+You use the same package to run the Go on all Google Cloud platforms using the same line of code.
+
+You configure the cloud services to automatically connect and run the Go app.
+
+
+8. To test your Go app before deploying to a Cloud platform...
+
+Correct - Use the testing and httptest packages from the standard library.
+
+Install an Apache web server on your local machine to test the Go app.
+
+Run the Go app on a simple emulator provided from the Golang website.
+
+If the Go app compiled without an error, there is no need to test the app.
+
+
+9. You’ve been asked by Marketing to create a Go app to retrieve user data. You can deploy to either Cloud Functions or App Engine. Since you haven’t used Go in a while, you need to review the basics. You know Go is made up of linked packages. But what's the first source code to get executed?
+
+Correct - The “main” package.
+
+The package that contains the Go application source code.
+
+The package that specified the data source
+
+The package specifying the platform on which the Go app runs.
+
+
+10. Now that you think about it, maybe you should deploy to App Engine. What's an advantage to using App Engine?
+
+Correct - App Engine can scale up and down as workloads fluctuate.
+
+App Engine is the best platform for container based applications.
+
+App Engine is event-driven to provide the best event driven response times possible.
+
+App Engine specializes in compiled languages like Go and Java to make it the most powerful platform for apps written in these programing languages.
