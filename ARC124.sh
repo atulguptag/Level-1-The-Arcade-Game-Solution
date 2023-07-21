@@ -1,8 +1,4 @@
 
-export REGION=
-
-export ZONE=
-
 
 gcloud compute instances create web1 \
 --zone=$ZONE \
