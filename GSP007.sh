@@ -1,4 +1,5 @@
-
+# Lab Name - Set Up Network and HTTP Load Balancers
+# Lab Link - https://www.cloudskillsboost.google/focuses/12007?parent=catalog
 
 #Step - 1
 gcloud compute instances create www1 \
