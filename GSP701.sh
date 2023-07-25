@@ -1,3 +1,8 @@
+# Lab Name - Use Go Code to Work with Google Cloud Data Sources
+# Lab Link - https://www.cloudskillsboost.google/focuses/10531?parent=catalog
+
+
+
 #Task 1 to 3
 export PROJECT_ID=$(gcloud info --format="value(config.project)")
 
