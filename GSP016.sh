@@ -1,4 +1,5 @@
-
+# Lab Name - Networking 101
+# Lab Link - https://www.cloudskillsboost.google/focuses/1743?parent=catalog
 
 gcloud compute networks create taw-custom-network --subnet-mode custom
 
