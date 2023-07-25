@@ -1,3 +1,6 @@
+# Lab Name - HTTP Google Cloud Functions in Go
+# Lab Link - https://www.cloudskillsboost.google/focuses/5171?parent=catalog
+
 
 
 gcloud services enable cloudfunctions.googleapis.com
