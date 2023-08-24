@@ -255,16 +255,6 @@ cd ~/monolith-to-microservices/react-app/
 gcloud compute forwarding-rules list --global
 ```
 
-## Return to the Cloud Shell Editor
-
-```cmd
-REACT_APP_ORDERS_URL=http://[LB_IP]/api/orders
-```
-
-```cmd
-REACT_APP_PRODUCTS_URL=http://[LB_IP]/api/products
-```
-
 ```cmd
 cd ~/monolith-to-microservices/react-app
 npm install && npm run-script build
