@@ -1,13 +1,15 @@
-### Lab Name - `Hosting a Web App on Google Cloud Using Compute Engine` [GSP662]
+## `Lab Name` - *Hosting a Web App on Google Cloud Using Compute Engine [GSP662]*
 
-### Lab Link - [CLICK HERE](https://www.cloudskillsboost.google/focuses/11952?parent=catalog)
+## `Lab Link` - [*CLICK HERE*](https://www.cloudskillsboost.google/focuses/11952?parent=catalog)
 
 
 ### Run the following commands in the Cloud Shell 
 
 ```cmd
-gcloud config set compute/zone us-central1-f
+export ZONE=
+```
 
+```
 gcloud services enable compute.googleapis.com
 
 gsutil mb gs://fancy-store-$DEVSHELL_PROJECT_ID
@@ -21,12 +23,57 @@ cd ~/monolith-to-microservices
 nvm install --lts
 ```
 
-## Open Editor
+## Open the Cloud Shell Editor.
 
-Click on File > New File and create a file called `startup-script.sh`
+```
+touch ~/monolith-to-microservices/startup-script.sh
+```
+* Now, Click Open Editor in the Cloud Shell ribbon to open the Code Editor.
+* Navigate to the `monolith-to-microservices` folder.
+* Add the following code to the `startup-script.sh` file.
 
+```
+#!/bin/bash
+# Install logging monitor. The monitor will automatically pick up logs sent to
+# syslog.
+curl -s "https://storage.googleapis.com/signals-agents/logging/google-fluentd-install.sh" | bash
+service google-fluentd restart &
+# Install dependencies from apt
+apt-get update
+apt-get install -yq ca-certificates git build-essential supervisor psmisc
+# Install nodejs
+mkdir /opt/nodejs
+curl https://nodejs.org/dist/v16.14.0/node-v16.14.0-linux-x64.tar.gz | tar xvzf - -C /opt/nodejs --strip-components=1
+ln -s /opt/nodejs/bin/node /usr/bin/node
+ln -s /opt/nodejs/bin/npm /usr/bin/npm
+# Get the application source code from the Google Cloud Storage bucket.
+mkdir /fancy-store
+gsutil -m cp -r gs://fancy-store-[DEVSHELL_PROJECT_ID]/monolith-to-microservices/microservices/* /fancy-store/
+# Install app dependencies.
+cd /fancy-store/
+npm install
+# Create a nodeapp user. The application will run as this user.
+useradd -m -d /home/nodeapp nodeapp
+chown -R nodeapp:nodeapp /opt/app
+# Configure supervisor to run the node app.
+cat >/etc/supervisor/conf.d/node-app.conf << EOF
+[program:nodeapp]
+directory=/fancy-store
+command=npm start
+autostart=true
+autorestart=true
+user=nodeapp
+environment=HOME="/home/nodeapp",USER="nodeapp",NODE_ENV="production"
+stdout_logfile=syslog
+stderr_logfile=syslog
+EOF
+supervisorctl reread
+supervisorctl update
+```
+* Find the text `[DEVSHELL_PROJECT_ID]` in the file and replace it with your `Project ID`.
+* Return back to your terminal and these commands.
 
-```cmd
+```
 gsutil cp ~/monolith-to-microservices/startup-script.sh gs://fancy-store-$DEVSHELL_PROJECT_ID
 
 cd ~
@@ -41,7 +88,7 @@ gcloud compute instances create backend \
 
 gcloud compute instances list
 ```
-
+* Copy the `External IP` for the backend. 
 
 ### In the Cloud Shell Explorer, navigate to `monolith-to-microservices` > `react-app`.
 
@@ -55,7 +102,9 @@ cd ~
 rm -rf monolith-to-microservices/*/node_modules
 
 gsutil -m cp -r monolith-to-microservices gs://fancy-store-$DEVSHELL_PROJECT_ID/
+```
 
+```
 gcloud compute instances create frontend \
     --machine-type=n1-standard-1 \
     --tags=frontend \
@@ -75,7 +124,9 @@ gcloud compute instances list
 gcloud compute instances stop frontend
 
 gcloud compute instances stop backend
+```
 
+```
 gcloud compute instance-templates create fancy-fe \
     --source-instance=frontend
 
@@ -85,7 +136,9 @@ gcloud compute instance-templates create fancy-be \
 gcloud compute instance-templates list
 
 gcloud compute instances delete --quiet  backend
+```
 
+```
 gcloud compute instance-groups managed create fancy-fe-mig \
     --base-instance-name fancy-fe \
     --size 2 \
@@ -101,7 +154,9 @@ gcloud compute instance-groups set-named-ports fancy-fe-mig \
 
 gcloud compute instance-groups set-named-ports fancy-be-mig \
     --named-ports orders:8081,products:8082
+```
 
+```
 gcloud compute health-checks create http fancy-fe-hc \
     --port 8080 \
     --check-interval 30s \
@@ -116,7 +171,9 @@ gcloud compute health-checks create http fancy-be-hc \
     --healthy-threshold 1 \
     --timeout 10s \
     --unhealthy-threshold 3
+```
 
+```
 gcloud compute firewall-rules create allow-health-check \
     --allow tcp:8080-8081 \
     --source-ranges 130.211.0.0/22,35.191.0.0/16 \
@@ -141,7 +198,9 @@ gcloud compute http-health-checks create fancy-be-orders-hc \
 gcloud compute http-health-checks create fancy-be-products-hc \
   --request-path /api/products \
   --port 8082
+```
 
+```
 gcloud compute backend-services create fancy-fe-frontend \
   --http-health-checks fancy-fe-frontend-hc \
   --port-name frontend \
@@ -159,19 +218,21 @@ gcloud compute backend-services create fancy-be-products \
 
 gcloud compute backend-services add-backend fancy-fe-frontend \
   --instance-group fancy-fe-mig \
-  --instance-group-zone us-central1-f \
+  --instance-group-zone $ZONE \
   --global
 
 gcloud compute backend-services add-backend fancy-be-orders \
   --instance-group fancy-be-mig \
-  --instance-group-zone us-central1-f \
+  --instance-group-zone $ZONE \
   --global
 
 gcloud compute backend-services add-backend fancy-be-products \
   --instance-group fancy-be-mig \
-  --instance-group-zone us-central1-f \
+  --instance-group-zone $ZONE \
   --global
+```
 
+```
 gcloud compute url-maps create fancy-map \
   --default-service fancy-fe-frontend
 
@@ -237,7 +298,7 @@ gcloud compute instances set-machine-type frontend --machine-type custom-4-3840
 
 gcloud compute instance-templates create fancy-fe-new \
     --source-instance=frontend \
-    --source-instance-zone=us-central1-f
+    --source-instance-zone=$ZONE
 
 gcloud compute instance-groups managed rolling-action start-update fancy-fe-mig \
     --version template=fancy-fe-new
