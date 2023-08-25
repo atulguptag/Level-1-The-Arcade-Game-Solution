@@ -5,15 +5,22 @@
 
 ### Run the following commands in the Cloud Shell 
 
-```cmd
+```
 export ZONE=
+```
+
+```
+export REGION=
 ```
 
 ```
 gcloud services enable compute.googleapis.com
 
 gsutil mb gs://fancy-store-$DEVSHELL_PROJECT_ID
+```
+## Task 3. Clone source repository
 
+```
 git clone https://github.com/googlecodelabs/monolith-to-microservices.git
 
 cd ~/monolith-to-microservices
@@ -23,7 +30,7 @@ cd ~/monolith-to-microservices
 nvm install --lts
 ```
 
-## Open the Cloud Shell Editor.
+## Task 4. Create Compute Engine instances
 
 ```
 touch ~/monolith-to-microservices/startup-script.sh
@@ -82,6 +89,7 @@ gsutil -m cp -r monolith-to-microservices gs://fancy-store-$DEVSHELL_PROJECT_ID/
 
 
 gcloud compute instances create backend \
+    --zone=$ZONE \
     --machine-type=n1-standard-1 \
     --tags=backend \
    --metadata=startup-script-url=https://storage.googleapis.com/fancy-store-$DEVSHELL_PROJECT_ID/startup-script.sh
@@ -106,6 +114,7 @@ gsutil -m cp -r monolith-to-microservices gs://fancy-store-$DEVSHELL_PROJECT_ID/
 
 ```
 gcloud compute instances create frontend \
+    --zone=$ZONE
     --machine-type=n1-standard-1 \
     --tags=frontend \
     --metadata=startup-script-url=https://storage.googleapis.com/fancy-store-$DEVSHELL_PROJECT_ID/startup-script.sh
@@ -120,39 +129,47 @@ gcloud compute firewall-rules create fw-be \
     --target-tags=backend
 
 gcloud compute instances list
-
-gcloud compute instances stop frontend
-
-gcloud compute instances stop backend
 ```
 
+## Task 5. Create managed instance groups
+
 ```
+gcloud compute instances stop frontend --zone=$ZONE
+
+gcloud compute instances stop backend --zone=$ZONE
+
 gcloud compute instance-templates create fancy-fe \
+    --source-instance-zone=$ZONE \
     --source-instance=frontend
 
 gcloud compute instance-templates create fancy-be \
+    --source-instance-zone=$ZONE \
     --source-instance=backend
 
 gcloud compute instance-templates list
 
-gcloud compute instances delete --quiet  backend
+gcloud compute instances delete backend --zone=$ZONE
 ```
 
 ```
 gcloud compute instance-groups managed create fancy-fe-mig \
+    --zone=$ZONE \
     --base-instance-name fancy-fe \
     --size 2 \
     --template fancy-fe
 
 gcloud compute instance-groups managed create fancy-be-mig \
+    --zone=$ZONE \
     --base-instance-name fancy-be \
     --size 2 \
     --template fancy-be
 
 gcloud compute instance-groups set-named-ports fancy-fe-mig \
+    --zone=$ZONE \
     --named-ports frontend:8080
 
 gcloud compute instance-groups set-named-ports fancy-be-mig \
+    --zone=$ZONE \
     --named-ports orders:8081,products:8082
 ```
 
@@ -180,13 +197,19 @@ gcloud compute firewall-rules create allow-health-check \
     --network default
 
 gcloud compute instance-groups managed update fancy-fe-mig \
+    --zone=$ZONE \
     --health-check fancy-fe-hc \
     --initial-delay 300
 
 gcloud compute instance-groups managed update fancy-be-mig \
+    --zone=$ZONE \
     --health-check fancy-be-hc \
     --initial-delay 300
+```
 
+## Task 6. Create load balancers
+
+```
 gcloud compute http-health-checks create fancy-fe-frontend-hc \
   --request-path / \
   --port 8080
@@ -249,13 +272,13 @@ gcloud compute forwarding-rules create fancy-http-rule \
   --global \
   --target-http-proxy fancy-proxy \
   --ports 80
+```
 
+```
 cd ~/monolith-to-microservices/react-app/
 
 gcloud compute forwarding-rules list --global
-```
 
-```cmd
 cd ~/monolith-to-microservices/react-app
 npm install && npm run-script build
 
@@ -263,65 +286,67 @@ cd ~
 rm -rf monolith-to-microservices/*/node_modules
 gsutil -m cp -r monolith-to-microservices gs://fancy-store-$DEVSHELL_PROJECT_ID/
 
-
 gcloud compute instance-groups managed rolling-action replace fancy-fe-mig \
     --max-unavailable 100%
+```
 
+## Task 7. Scaling Compute Engine
 
+```
 gcloud compute instance-groups managed set-autoscaling \
   fancy-fe-mig \
   --max-num-replicas 2 \
   --target-load-balancing-utilization 0.60
-
 
 gcloud compute instance-groups managed set-autoscaling \
   fancy-be-mig \
   --max-num-replicas 2 \
   --target-load-balancing-utilization 0.60
 
-
 gcloud compute backend-services update fancy-fe-frontend \
     --enable-cdn --global
+```
 
+## Task 8. Update the website
 
+```
 gcloud compute instances set-machine-type frontend \
   --zone=$ZONE \
   --machine-type e2-small
 
 gcloud compute instance-templates create fancy-fe-new \
+    --region=$REGION \
     --source-instance=frontend \
     --source-instance-zone=$ZONE
 
 gcloud compute instance-groups managed rolling-action start-update fancy-fe-mig \
-    --version template=fancy-fe-new
+  --zone=$ZONE \
+  --version template=fancy-fe-new
 
+watch -n 2 gcloud compute instance-groups managed list-instances fancy-fe-mig \
+  --zone=$ZONE
+```
 
+```
 cd ~/monolith-to-microservices/react-app/src/pages/Home
-mv index.js.new index.js
 
+mv index.js.new index.js
 
 cat ~/monolith-to-microservices/react-app/src/pages/Home/index.js
 
-
 cd ~/monolith-to-microservices/react-app
+
 npm install && npm run-script build
 
-
 cd ~
+
 rm -rf monolith-to-microservices/*/node_modules
+
 gsutil -m cp -r monolith-to-microservices gs://fancy-store-$DEVSHELL_PROJECT_ID/
 
-
 gcloud compute instance-groups managed rolling-action replace fancy-fe-mig \
-    --max-unavailable=100%
-
+  --zone=$ZONE \
+  --max-unavailable=100%
 ```
 
 # Congratulation🎉! You are done with this lab.
-
-
-
-
-
-
-
