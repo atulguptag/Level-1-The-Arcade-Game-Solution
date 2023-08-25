@@ -295,11 +295,13 @@ gcloud compute instance-groups managed rolling-action replace fancy-fe-mig \
 ```
 gcloud compute instance-groups managed set-autoscaling \
   fancy-fe-mig \
+  --zone=$ZONE \
   --max-num-replicas 2 \
   --target-load-balancing-utilization 0.60
 
 gcloud compute instance-groups managed set-autoscaling \
   fancy-be-mig \
+  --zone=$ZONE \
   --max-num-replicas 2 \
   --target-load-balancing-utilization 0.60
 
